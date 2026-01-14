@@ -61,6 +61,9 @@
             padding: 16px;
             margin-bottom: 16px;
         }
+        .panel.compact {
+            padding: 10px 12px;
+        }
         body.day-mode .panel {
             background: rgba(226, 232, 240, 0.9);
         }
@@ -69,6 +72,10 @@
             font-weight: bold;
             letter-spacing: 2px;
             margin-bottom: 8px;
+        }
+        .panel.compact .display {
+            font-size: 22px;
+            margin-bottom: 4px;
         }
         .status {
             font-size: 12px;
@@ -82,6 +89,9 @@
         .seek-row {
             margin-top: 12px;
         }
+        .panel.compact .seek-row {
+            margin-top: 6px;
+        }
         .seek-row input[type=range] {
             width: 100%;
         }
@@ -92,6 +102,8 @@
         .controls .button {
             width: 30%;
             text-align: center;
+            padding: 14px 0;
+            font-size: 18px;
         }
         .controls .button.main {
             background: #10b981;
@@ -109,6 +121,8 @@
         .grid button {
             width: 30%;
             margin: 5px 1.5%;
+            padding: 14px 0;
+            font-size: 14px;
         }
         .preset-active {
             box-shadow: 0 0 10px #10b981;
@@ -152,6 +166,9 @@
             opacity: 0.6;
             margin-bottom: 4px;
         }
+        .panel.compact .label {
+            margin-bottom: 2px;
+        }
         .input {
             width: 100%;
             padding: 10px;
@@ -178,7 +195,7 @@
             </div>
         </div>
 
-        <div class="panel">
+        <div class="panel compact">
             <div class="status" id="mode-indicator">Connected</div>
             <div class="display" id="display-title">00:00</div>
             <div class="display" id="sleep-timer-display">Sleep: Off</div>
@@ -202,7 +219,7 @@
             </div>
         </div>
 
-        <div class="panel">
+        <div class="panel compact">
             <span class="label">Sleep Timer</span>
             <button class="button alt" id="sleep-15">Sleep in 15 mins</button>
             <button class="button alt" id="sleep-30">Sleep in 30 mins</button>
