@@ -113,6 +113,11 @@
         .preset-active {
             box-shadow: 0 0 10px #10b981;
         }
+        .preset-paused {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+        }
         .library-overlay {
             position: fixed;
             top: 0;
@@ -212,6 +217,8 @@
                 <button class="button alt" data-preset="4">Preset 4</button>
                 <button class="button alt" data-preset="5">Preset 5</button>
                 <button class="button alt" data-preset="6">Preset 6</button>
+                <button class="button alt" data-preset="7">Preset 7</button>
+                <button class="button alt" data-preset="8">Preset 8</button>
             </div>
         </div>
     </div>
@@ -649,17 +656,18 @@
 
     function updateActivePresetButtons() {
         var activeUrl = state.currentSource && state.currentSource.data ? state.currentSource.data.url : null;
+        var isPaused = audio.paused;
         var buttons = document.querySelectorAll('[data-preset]');
         var i;
         for (i = 0; i < buttons.length; i++) {
             var presetId = buttons[i].getAttribute('data-preset');
             var preset = state.presets[presetId];
             var isActive = preset && preset.data && activeUrl && preset.data.url === activeUrl;
+            var nextClass = buttons[i].className.replace(' preset-active', '').replace(' preset-paused', '');
             if (isActive) {
-                buttons[i].className = buttons[i].className + ' preset-active';
-            } else {
-                buttons[i].className = buttons[i].className.replace(' preset-active', '');
+                nextClass += isPaused ? ' preset-paused' : ' preset-active';
             }
+            buttons[i].className = nextClass;
         }
     }
 
@@ -713,7 +721,7 @@
         var presetWrap = document.createElement('div');
         presetWrap.style.marginTop = '8px';
         var p;
-        for (p = 1; p <= 6; p++) {
+        for (p = 1; p <= 8; p++) {
             var pButton = document.createElement('button');
             pButton.className = 'button alt';
             pButton.textContent = 'P' + p;
@@ -904,9 +912,14 @@
 
     audio.addEventListener('play', function () {
         document.getElementById('play-btn').textContent = '||';
+        updateActivePresetButtons();
     });
     audio.addEventListener('pause', function () {
         document.getElementById('play-btn').textContent = '▶';
+        updateActivePresetButtons();
+    });
+    audio.addEventListener('ended', function () {
+        updateActivePresetButtons();
     });
     audio.addEventListener('canplay', function () {
         if (pendingResumeTime > 0) {
