@@ -15,6 +15,8 @@ CarStereoStyleAudioApp is a lightweight web app that presents a car-stereo-inspi
 - Mobile-friendly player controls now stay visible with a compact layout.
 - Phone layout now prioritizes the full-width progress scrubber with a vertical mix slider.
 - The library info panel collapses on smaller screens for easier browsing.
+- The player display now uses a slimmer status strip so more space is dedicated to touch controls.
+- Preset buttons expanded to eight slots with larger tap targets for quicker access.
 - Sleep timer displays a live countdown when active.
 - Preset buttons now highlight the active source during playback.
 - Offline-first library browsing now uses cached metadata when connectivity drops.
