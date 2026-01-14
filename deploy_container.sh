@@ -2,7 +2,7 @@
 
 # --- Configuration ---
 PORT_ARG=${1:-3005}
-REPO_URL="https://github.com/dylan7474/CarStereoStyleAudioApp.git"
+REPO_URL="https://github.com/dylan7474/Infotainment.git"
 TARGET_DIR="$HOME/carstereo/src"
 BOOKS_DIR="$HOME/my_audiobooks"
 DATA_DIR="$HOME/carstereo_data"
@@ -159,17 +159,17 @@ EOF
 
 # 4. Build & Launch
 sudo chown -R $SERVICE_UID:$SERVICE_GID "$DATA_DIR"
-docker build -t carstereo-player .
-docker stop carstereo-player 2>/dev/null || true
-docker rm carstereo-player 2>/dev/null || true
+docker build -t infotainment .
+docker stop infotainment 2>/dev/null || true
+docker rm infotainment 2>/dev/null || true
 
 docker run -d \
---name carstereo-player \
+--name infotainment \
 -p "$PORT_ARG":"$PORT_ARG" \
 -v "$BOOKS_DIR":/app/books:ro \
 -v "$DATA_DIR":/app/data \
 --restart unless-stopped \
-carstereo-player
+infotainment
 
 # Robust IP detection for laptops
 IP_ADDR=$(python3 -c "import socket; s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s.connect(('8.8.8.8', 80)); print(s.getsockname()[0]); s.close()" 2>/dev/null || echo "localhost")
