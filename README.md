@@ -35,6 +35,7 @@ CarStereoStyleAudioApp is a lightweight web app that presents a car-stereo-inspi
 - Preset buttons now display a paused state so play status is visible in both layouts.
 - Legacy playback can now be started or paused by tapping the time readout when autoplay is blocked.
 - Legacy tap controls now avoid double-triggering so pause stays reliable on older iPad Safari.
+- Legacy layout now compresses the progress and sleep timer panels to make room for larger control buttons.
 
 ## Improvement Ideas
 
