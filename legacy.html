@@ -1,13 +1,9 @@
-{
-type: uploaded file
-fileName: dylan7474/infotainment/Infotainment-0d81ae2f5f7ad7952a0c707af67fd398894e84a1/legacy.html
-fullContent:
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CarStereo Infotainment (Legacy)</title>
+    <title>CarStereo Legacy</title>
     <style>
         /* --- CORE LAYOUT (NO SCROLL) --- */
         html, body {
@@ -39,7 +35,7 @@ fullContent:
         .section-fixed {
             flex: 0 0 auto;
             -webkit-flex: 0 0 auto;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         /* Bottom section grows to fill the screen */
@@ -66,10 +62,16 @@ fullContent:
             margin: 0;
             line-height: 34px;
         }
+        .header-actions {
+            display: flex;
+            display: -webkit-flex;
+        }
         .header-actions .button {
-            padding: 8px 12px;
-            font-size: 12px;
+            padding: 8px 10px;
+            font-size: 11px;
             margin-left: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
         }
 
         /* --- PANELS --- */
@@ -125,7 +127,7 @@ fullContent:
         }
         .controls .button {
             width: 32%;
-            padding: 16px 0; /* Good touch target */
+            padding: 14px 0; /* Good touch target */
             font-size: 22px;
             text-align: center;
             border-radius: 8px;
@@ -138,18 +140,34 @@ fullContent:
             color: #0a0c10;
         }
         
-        /* Mix Row (Compact) */
-        .mix-row {
+        /* Mix & Sleep Rows (Compact) */
+        .utility-row {
             display: flex;
             display: -webkit-flex;
             align-items: center;
-            font-size: 10px;
-            margin-top: 4px;
+            margin-top: 6px;
+            justify-content: space-between;
+            gap: 8px;
         }
-        .mix-row input {
+        
+        .mix-container {
             flex-grow: 1;
             -webkit-flex-grow: 1;
-            margin-left: 8px;
+            display: flex;
+            display: -webkit-flex;
+            align-items: center;
+            background: rgba(0,0,0,0.2);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .mix-label { font-size: 10px; margin-right: 6px; opacity: 0.7; }
+        .mix-container input { width: 100%; }
+
+        .sleep-btn {
+            padding: 8px 12px;
+            font-size: 11px;
+            font-weight: bold;
+            white-space: nowrap;
         }
 
         /* --- PRESET GRID (THE FOCUS) --- */
@@ -211,6 +229,7 @@ fullContent:
             width: 100%; padding: 12px;
             background: #1f2937; border: 1px solid #374151;
             color: white; border-radius: 6px; margin-bottom: 8px;
+            box-sizing: border-box;
         }
         .library-entry {
             background: #1f2937; padding: 12px; margin-bottom: 8px; border-radius: 6px;
@@ -220,11 +239,12 @@ fullContent:
 <body>
     <div class="container">
         <div class="section-fixed header">
-            <h1>LEGACY 4.4</h1>
+            <h1>LEGACY</h1>
             <div class="header-actions">
-                <button class="button alt" id="noise-toggle">Ns Off</button>
+                <button class="button alt" id="noise-toggle">Off</button>
+                <button class="button alt" id="noise-type-toggle">Wht</button>
                 <button class="button alt" id="day-mode-btn">☀</button>
-                <button class="button" id="library-btn">LIB</button>
+                <button class="button" id="library-btn">Lib</button>
             </div>
         </div>
 
@@ -247,9 +267,13 @@ fullContent:
                 <button class="button main" id="play-btn">▶</button>
                 <button class="button alt" id="next-btn">⏭</button>
             </div>
-            <div class="mix-row">
-                <span>Mix</span>
-                <input type="range" id="noise-balance" min="0" max="1" step="0.01" value="0.33">
+            <div class="utility-row">
+                <div class="mix-container">
+                    <span class="mix-label">Mix</span>
+                    <input type="range" id="noise-balance" min="0" max="1" step="0.01" value="0.33">
+                </div>
+                <button class="button alt sleep-btn" id="sleep-15">15m</button>
+                <button class="button alt sleep-btn" id="sleep-30">30m</button>
             </div>
         </div>
 
@@ -266,8 +290,6 @@ fullContent:
             </div>
         </div>
     </div>
-
-    <button id="noise-type-toggle" style="display:none"></button> <button id="sleep-15" style="display:none"></button> <button id="sleep-30" style="display:none"></button>
 
     <div class="library-overlay" id="overlay-library">
         <div class="header">
@@ -353,10 +375,17 @@ fullContent:
 
     function updateNoiseUI() {
         if (noiseToggleBtn) {
-            noiseToggleBtn.textContent = noiseIsOn ? 'Ns On' : 'Ns Off';
-            noiseToggleBtn.className = noiseIsOn ? 'button is-on' : 'button alt';
-            if(noiseIsOn) noiseToggleBtn.style.background = '#10b981';
-            else noiseToggleBtn.style.background = '';
+            noiseToggleBtn.textContent = noiseIsOn ? 'On' : 'Off';
+            if(noiseIsOn) {
+                noiseToggleBtn.style.background = '#10b981';
+                noiseToggleBtn.style.color = '#000';
+            } else {
+                noiseToggleBtn.style.background = '';
+                noiseToggleBtn.style.color = '';
+            }
+        }
+        if (noiseTypeBtn) {
+            noiseTypeBtn.textContent = noiseType === 'blue' ? 'Blu' : 'Wht';
         }
     }
 
@@ -430,6 +459,15 @@ fullContent:
 
     function toggleNoise() {
         if (noiseIsOn) stopNoise(); else startNoise();
+    }
+    
+    function toggleNoiseType() {
+        noiseType = noiseType === 'white' ? 'blue' : 'white';
+        if (noiseIsOn) {
+            startNoise();
+        } else {
+            updateNoiseUI();
+        }
     }
 
     function loadCachedLibrary() {
@@ -624,7 +662,7 @@ fullContent:
         var i;
         for (i = 0; i < buttons.length; i++) {
             if (buttons[i].getAttribute('data-preset') == id) {
-                // Flash effect handled by CSS or quick style
+                // Flash handled via style refresh
             }
         }
     }
@@ -693,7 +731,6 @@ fullContent:
         var div = document.createElement('div');
         div.className = 'library-entry';
         
-        // Simplified entry for legacy
         var row = document.createElement('div');
         row.style.display = 'flex';
         row.style.justifyContent = 'space-between';
@@ -713,7 +750,6 @@ fullContent:
         
         div.appendChild(row);
 
-        // Quick Preset Assign
         var pRow = document.createElement('div');
         pRow.style.marginTop = '8px';
         for (var p = 1; p <= 8; p++) {
@@ -905,10 +941,14 @@ fullContent:
     bindTap(document.getElementById('save-station'), addRadioStation);
     document.getElementById('lib-search').oninput = renderLibrary;
     bindTap(document.getElementById('noise-toggle'), toggleNoise);
+    bindTap(document.getElementById('noise-type-toggle'), toggleNoiseType);
 
     bindTap(document.getElementById('play-btn'), togglePlay);
     bindTap(document.getElementById('prev-btn'), function () { smartSeek(-15); });
     bindTap(document.getElementById('next-btn'), function () { smartSeek(30); });
+    
+    bindTap(document.getElementById('sleep-15'), function () { setSleepTimer(15); });
+    bindTap(document.getElementById('sleep-30'), function () { setSleepTimer(30); });
 
     var presetButtons = document.querySelectorAll('[data-preset]');
     var i;
@@ -934,4 +974,3 @@ fullContent:
 </script>
 </body>
 </html>
-}
