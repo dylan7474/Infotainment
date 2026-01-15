@@ -445,6 +445,13 @@
     function updateNoiseGain() {
         var mix = getNoiseMix();
         
+        // FIX: Explicitly mute if we want 0 volume to force iOS to silence
+        if (mix >= 0.98) {
+             audio.muted = true;
+        } else {
+             audio.muted = false;
+        }
+        
         // 1. Control Music Volume (0 to 1 based on mix)
         if (audioGain) {
             audioGain.gain.value = 1 - mix;
