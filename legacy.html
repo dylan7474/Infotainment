@@ -92,6 +92,17 @@
             align-items: baseline;
             margin-bottom: 4px;
         }
+        .status-left {
+            flex: 1;
+            -webkit-flex: 1;
+        }
+        .status-right {
+            text-align: right;
+            display: flex;
+            display: -webkit-flex;
+            align-items: baseline;
+            justify-content: flex-end;
+        }
         .display {
             font-size: 20px;
             font-weight: bold;
@@ -102,6 +113,13 @@
             text-transform: uppercase;
             color: #10b981;
         }
+        .sleep-indicator {
+            font-size: 12px;
+            color: #f59e0b;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
         .seek-container {
             display: flex;
             display: -webkit-flex;
@@ -250,9 +268,11 @@
 
         <div class="section-fixed panel">
             <div class="status-row">
-                <div class="status" id="mode-indicator">Ready</div>
-                <div class="display" id="display-title">00:00</div>
-                <div class="status" id="sleep-timer-display"></div>
+                <div class="status status-left" id="mode-indicator">Ready</div>
+                <div class="status-right">
+                    <span class="display" id="display-title">00:00</span>
+                    <span class="sleep-indicator" id="sleep-timer-display"></span>
+                </div>
             </div>
             <div class="seek-container">
                 <span class="time-label" id="current-time">0:00</span>
