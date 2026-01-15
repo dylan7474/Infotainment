@@ -31,18 +31,16 @@
         }
 
         /* --- SECTIONS --- */
-        /* Top sections don't grow, they take minimum space needed */
         .section-fixed {
             flex: 0 0 auto;
             -webkit-flex: 0 0 auto;
             margin-bottom: 6px;
         }
 
-        /* Bottom section grows to fill the screen */
         .section-grow {
             flex: 1 1 auto;
             -webkit-flex: 1 1 auto;
-            min-height: 0; /* Firefox/Flex fix */
+            min-height: 0;
             display: flex;
             display: -webkit-flex;
             flex-direction: column;
@@ -84,7 +82,7 @@
             background: rgba(226, 232, 240, 0.9);
         }
 
-        /* --- COMPACT STATUS & SEEK --- */
+        /* --- STATUS ROW (UPDATED) --- */
         .status-row {
             display: flex;
             display: -webkit-flex;
@@ -103,23 +101,31 @@
             align-items: baseline;
             justify-content: flex-end;
         }
+        
+        /* Unified Large Display Text */
         .display {
             font-size: 20px;
             font-weight: bold;
             letter-spacing: 1px;
+            font-variant-numeric: tabular-nums; /* Monospace numbers for stability */
         }
+        
         .status {
             font-size: 10px;
             text-transform: uppercase;
             color: #10b981;
         }
-        .sleep-indicator {
-            font-size: 12px;
-            color: #f59e0b;
-            font-weight: bold;
-            margin-left: 10px;
-        }
         
+        /* Sleep Timer Specifics */
+        .sleep-indicator {
+            color: #f59e0b; /* Orange to distinguish from progress */
+        }
+        .sleep-sep {
+            margin: 0 6px;
+            opacity: 0.5;
+            font-size: 18px;
+        }
+
         .seek-container {
             display: flex;
             display: -webkit-flex;
@@ -145,7 +151,7 @@
         }
         .controls .button {
             width: 32%;
-            padding: 14px 0; /* Good touch target */
+            padding: 14px 0;
             font-size: 22px;
             text-align: center;
             border-radius: 8px;
@@ -158,7 +164,7 @@
             color: #0a0c10;
         }
         
-        /* Mix & Sleep Rows (Compact) */
+        /* Utility Row */
         .utility-row {
             display: flex;
             display: -webkit-flex;
@@ -188,25 +194,25 @@
             white-space: nowrap;
         }
 
-        /* --- PRESET GRID (THE FOCUS) --- */
+        /* --- PRESET GRID --- */
         .grid {
             height: 100%;
             display: flex;
             display: -webkit-flex;
             flex-wrap: wrap;
             -webkit-flex-wrap: wrap;
-            align-content: stretch; /* Stretch rows to fill height */
+            align-content: stretch;
         }
         .grid button {
-            width: 48%;          /* 2 Columns */
+            width: 48%;
             margin: 1%;
             background: #1f2937;
             color: #e2e8f0;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
-            font-size: 24px;     /* Large text for low eyesight */
+            font-size: 24px;
             font-weight: bold;
-            flex-grow: 1;        /* Expand to fill empty space */
+            flex-grow: 1;
             -webkit-flex-grow: 1;
             display: flex;
             display: -webkit-flex;
@@ -237,7 +243,6 @@
         .button.warn { background: #ef4444; }
         .hidden { display: none !important; }
         
-        /* Library Overlay */
         .library-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: #0a0c10; z-index: 100;
@@ -271,7 +276,8 @@
                 <div class="status status-left" id="mode-indicator">Ready</div>
                 <div class="status-right">
                     <span class="display" id="display-title">00:00</span>
-                    <span class="sleep-indicator" id="sleep-timer-display"></span>
+                    <span class="display sleep-sep" id="sleep-sep" style="display:none">/</span>
+                    <span class="display sleep-indicator" id="sleep-timer-display" style="display:none"></span>
                 </div>
             </div>
             <div class="seek-container">
@@ -356,7 +362,10 @@
     var seekBar = document.getElementById('seek-bar');
     var modeIndicator = document.getElementById('mode-indicator');
     var defaultModeText = modeIndicator.textContent;
+    
     var sleepDisplay = document.getElementById('sleep-timer-display');
+    var sleepSep = document.getElementById('sleep-sep');
+    
     var timeDisplay = document.getElementById('display-title');
     var currentTimeDisplay = document.getElementById('current-time');
     var durationDisplay = document.getElementById('duration');
@@ -583,7 +592,13 @@
         var remainingSeconds = Math.floor(remainingMs / 1000);
         var minutes = Math.floor(remainingSeconds / 60);
         var seconds = remainingSeconds % 60;
-        if(sleepDisplay) sleepDisplay.textContent = 'Slp ' + minutes;
+        
+        if (sleepDisplay && sleepSep) {
+            sleepDisplay.style.display = 'inline';
+            sleepSep.style.display = 'inline';
+            sleepDisplay.textContent = pad(minutes) + ':' + pad(seconds);
+        }
+        
         if (remainingMs === 0) endSleepTimer();
     }
 
@@ -594,7 +609,12 @@
         sleepIntervalId = null;
         sleepEndTime = null;
         audio.pause();
-        if(sleepDisplay) sleepDisplay.textContent = '';
+        
+        if (sleepDisplay && sleepSep) {
+            sleepDisplay.style.display = 'none';
+            sleepSep.style.display = 'none';
+            sleepDisplay.textContent = '';
+        }
     }
 
     function setSleepTimer(minutes) {
