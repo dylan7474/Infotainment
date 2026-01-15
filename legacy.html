@@ -82,7 +82,7 @@
             background: rgba(226, 232, 240, 0.9);
         }
 
-        /* --- STATUS ROW (UPDATED) --- */
+        /* --- STATUS ROW --- */
         .status-row {
             display: flex;
             display: -webkit-flex;
@@ -102,12 +102,11 @@
             justify-content: flex-end;
         }
         
-        /* Unified Large Display Text */
         .display {
             font-size: 20px;
             font-weight: bold;
             letter-spacing: 1px;
-            font-variant-numeric: tabular-nums; /* Monospace numbers for stability */
+            font-variant-numeric: tabular-nums;
         }
         
         .status {
@@ -116,9 +115,8 @@
             color: #10b981;
         }
         
-        /* Sleep Timer Specifics */
         .sleep-indicator {
-            color: #f59e0b; /* Orange to distinguish from progress */
+            color: #f59e0b;
         }
         .sleep-sep {
             margin: 0 6px;
@@ -373,12 +371,16 @@
     var noiseToggleBtn = document.getElementById('noise-toggle');
     var noiseTypeBtn = document.getElementById('noise-type-toggle');
     var noiseBalanceControl = document.getElementById('noise-balance');
-    var noiseContext = null;
-    var noiseSource = null;
+    
+    /* --- AUDIO ENGINE --- */
+    var audioCtx = null;
+    var audioSource = null;
+    var audioGain = null;
     var noiseGain = null;
+    var noiseSource = null;
+    
     var baseNoiseGain = 0.12;
     var blueNoiseGainBoost = 3;
-    var noiseBalanceLimits = { min: 0, max: 1 };
     var noiseBalance = 0.33;
     var noiseType = 'white';
     var noiseIsOn = false;
@@ -418,17 +420,44 @@
         }
     }
 
+    /* --- AUDIO ROUTING FOR VOLUME CONTROL --- */
+    function initAudio() {
+        if (audioCtx) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return;
+        }
+        var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+        
+        // Route Music Track through WebAudio to bypass iOS volume lock
+        audioSource = audioCtx.createMediaElementSource(audio);
+        audioGain = audioCtx.createGain();
+        audioSource.connect(audioGain);
+        audioGain.connect(audioCtx.destination);
+        
+        updateNoiseGain();
+    }
+
     function getNoiseMix() {
         return Math.min(1, Math.max(0, noiseBalance));
     }
 
     function updateNoiseGain() {
         var mix = getNoiseMix();
+        
+        // 1. Control Music Volume (0 to 1 based on mix)
+        if (audioGain) {
+            audioGain.gain.value = 1 - mix;
+        } else {
+            // Fallback for non-iOS or before init
+            audio.volume = 1 - mix;
+        }
+
+        // 2. Control Noise Volume
         if (noiseGain) {
             var noiseTypeBoost = noiseType === 'blue' ? blueNoiseGainBoost : 1;
             noiseGain.gain.value = baseNoiseGain * mix * noiseTypeBoost;
         }
-        audio.volume = 1 - mix;
     }
 
     function createNoiseBuffer(context, type) {
@@ -451,24 +480,24 @@
     }
 
     function startNoise() {
-        if (!noiseContext) {
-            var AudioContextClass = window.AudioContext || window.webkitAudioContext;
-            noiseContext = new AudioContextClass();
-        }
-        if (noiseContext.state === 'suspended') {
-            noiseContext.resume();
-        }
+        initAudio(); // Ensure context is ready
+        
         if (noiseSource) {
-            noiseSource.stop();
-            noiseSource.disconnect();
+            try { noiseSource.stop(); noiseSource.disconnect(); } catch(e){}
         }
-        noiseSource = noiseContext.createBufferSource();
-        noiseSource.buffer = createNoiseBuffer(noiseContext, noiseType);
+        
+        noiseSource = audioCtx.createBufferSource();
+        noiseSource.buffer = createNoiseBuffer(audioCtx, noiseType);
         noiseSource.loop = true;
-        noiseGain = noiseContext.createGain();
-        updateNoiseGain();
+        
+        // Recreate noise gain node to ensure fresh connection
+        noiseGain = audioCtx.createGain();
+        
         noiseSource.connect(noiseGain);
-        noiseGain.connect(noiseContext.destination);
+        noiseGain.connect(audioCtx.destination);
+        
+        updateNoiseGain();
+        
         noiseSource.start();
         noiseIsOn = true;
         updateNoiseUI();
@@ -477,8 +506,7 @@
 
     function stopNoise() {
         if (noiseSource) {
-            noiseSource.stop();
-            noiseSource.disconnect();
+            try { noiseSource.stop(); noiseSource.disconnect(); } catch(e){}
             noiseSource = null;
         }
         noiseIsOn = false;
@@ -499,6 +527,7 @@
         }
     }
 
+    /* --- LIBRARY & SYNC --- */
     function loadCachedLibrary() {
         try {
             var cached = JSON.parse(localStorage.getItem(LIBRARY_CACHE_KEY));
@@ -544,6 +573,7 @@
         });
     }
 
+    /* --- PLAYBACK UI --- */
     function updateCurrentTimeDisplay(value) {
         var timeText = formatTime(value);
         if (currentTimeDisplay) currentTimeDisplay.textContent = timeText;
@@ -562,6 +592,7 @@
     }
 
     function togglePlay() {
+        initAudio(); // Required for iOS volume control
         if (audio.paused) safePlay(); else audio.pause();
     }
 
@@ -669,6 +700,7 @@
 
     function handlePresetStart(id) {
         state.isHolding = false;
+        initAudio(); // Init audio for presets
         clearTimeout(state.longPressTimer);
         state.longPressTimer = setTimeout(function () {
             if (state.currentSource) {
@@ -698,13 +730,7 @@
     }
 
     function flashPreset(id) {
-        var buttons = document.querySelectorAll('[data-preset]');
-        var i;
-        for (i = 0; i < buttons.length; i++) {
-            if (buttons[i].getAttribute('data-preset') == id) {
-                // Flash handled via style refresh
-            }
-        }
+        // Flash handled via style refresh
     }
 
     function updatePresetButtons() {
