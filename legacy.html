@@ -599,7 +599,6 @@
     }
 
     function togglePlay() {
-        initAudio(); // Required for iOS volume control
         if (audio.paused) safePlay(); else audio.pause();
     }
 
@@ -688,7 +687,7 @@
         pendingResumeTime = state.playbackPositions[trackKey] || 0;
         audio.pause();
         audio.src = track.url;
-        audio.load();
+        // Removed audio.load() to prevent severing Web Audio connection on iOS
         safePlay();
         toggleView(false);
         updateActivePresetButtons();
@@ -699,7 +698,7 @@
         state.currentSource = { type: 'radio', data: station };
         audio.pause();
         audio.src = station.url;
-        audio.load();
+        // Removed audio.load()
         safePlay();
         toggleView(false);
         updateActivePresetButtons();
@@ -707,7 +706,7 @@
 
     function handlePresetStart(id) {
         state.isHolding = false;
-        initAudio(); // Init audio for presets
+        // initAudio(); // Removed here, moved to safePlay for better coverage
         clearTimeout(state.longPressTimer);
         state.longPressTimer = setTimeout(function () {
             if (state.currentSource) {
@@ -875,6 +874,7 @@
     }
 
     function safePlay() {
+        initAudio(); // Initialize Web Audio on any play attempt
         var playPromise;
         try { playPromise = audio.play(); } catch (e) { showModeMessage('TAP PLAY'); return; }
         if (playPromise && typeof playPromise.then === 'function') {
