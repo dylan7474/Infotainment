@@ -332,7 +332,7 @@
         <button class="button alt" id="toggle-radio-form-btn" style="margin-top:10px; width:100%">Add Station</button>
     </div>
 
-    <audio id="audio-player" preload="metadata" playsinline webkit-playsinline></audio>
+    <audio id="audio-player" preload="metadata" playsinline webkit-playsinline crossorigin="anonymous"></audio>
 
 <script>
     var BOOKMARKS_ENDPOINT = './api/bookmarks';
@@ -445,18 +445,17 @@
     function updateNoiseGain() {
         var mix = getNoiseMix();
         
-        // FIX: Explicitly mute if we want 0 volume to force iOS to silence
+        // Explicitly mute if we want 0 volume to force iOS to silence
         if (mix >= 0.98) {
              audio.muted = true;
         } else {
              audio.muted = false;
         }
         
-        // 1. Control Music Volume (0 to 1 based on mix)
+        // 1. Control Music Volume
         if (audioGain) {
             audioGain.gain.value = 1 - mix;
         } else {
-            // Fallback for non-iOS or before init
             audio.volume = 1 - mix;
         }
 
@@ -497,14 +496,11 @@
         noiseSource.buffer = createNoiseBuffer(audioCtx, noiseType);
         noiseSource.loop = true;
         
-        // Recreate noise gain node to ensure fresh connection
         noiseGain = audioCtx.createGain();
-        
         noiseSource.connect(noiseGain);
         noiseGain.connect(audioCtx.destination);
         
         updateNoiseGain();
-        
         noiseSource.start();
         noiseIsOn = true;
         updateNoiseUI();
@@ -599,6 +595,7 @@
     }
 
     function togglePlay() {
+        initAudio(); // Initialize audio engine on user interaction
         if (audio.paused) safePlay(); else audio.pause();
     }
 
@@ -687,7 +684,7 @@
         pendingResumeTime = state.playbackPositions[trackKey] || 0;
         audio.pause();
         audio.src = track.url;
-        // Removed audio.load() to prevent severing Web Audio connection on iOS
+        audio.load(); // Restored: Critical for iOS playback
         safePlay();
         toggleView(false);
         updateActivePresetButtons();
@@ -698,7 +695,7 @@
         state.currentSource = { type: 'radio', data: station };
         audio.pause();
         audio.src = station.url;
-        // Removed audio.load()
+        audio.load(); // Restored
         safePlay();
         toggleView(false);
         updateActivePresetButtons();
@@ -706,7 +703,7 @@
 
     function handlePresetStart(id) {
         state.isHolding = false;
-        // initAudio(); // Removed here, moved to safePlay for better coverage
+        initAudio(); // Init audio engine
         clearTimeout(state.longPressTimer);
         state.longPressTimer = setTimeout(function () {
             if (state.currentSource) {
@@ -874,7 +871,7 @@
     }
 
     function safePlay() {
-        initAudio(); // Initialize Web Audio on any play attempt
+        initAudio(); // Ensure engine is ready
         var playPromise;
         try { playPromise = audio.play(); } catch (e) { showModeMessage('TAP PLAY'); return; }
         if (playPromise && typeof playPromise.then === 'function') {
