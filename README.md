@@ -43,6 +43,7 @@ CarStereoStyleAudioApp is a lightweight web app that presents a car-stereo-inspi
 - Restored the main layout noise generator controls with toggles and a noise/stream mix slider.
 - Replaced the main layout volume slider with a dedicated noise/stream balance control.
 - Legacy layout now stretches the noise/stream mix slider to full width for easier touch adjustments.
+- Legacy channel preset buttons now use larger sizing and text for easier taps.
 
 ## Improvement Ideas
 
