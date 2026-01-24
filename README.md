@@ -32,6 +32,7 @@ CarStereoStyleAudioApp is a lightweight web app that presents a car-stereo-inspi
 - Mirrored the noise toggle, noise type, and mix balance controls in the legacy layout for parity.
 - Adjusted the noise/stream mix slider so endpoints reach true 0%/100% levels for both sources.
 - Index layout relies on multi-function channel presets to toggle play/pause when the active channel is pressed.
+- Removed the standalone play/pause button so channel taps handle play/pause consistently on desktop and mobile.
 - Legacy layout keeps a dedicated play button for older iPad Mini Safari where multi-function buttons can be unreliable.
 - Preset buttons now display a paused state so play status is visible in both layouts.
 - Legacy playback can now be started or paused by tapping the time readout when autoplay is blocked.
