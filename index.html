@@ -226,8 +226,8 @@
 
     const playBtn = document.getElementById('play-btn');
     // UI Sync for Play/Pause Button
-    audio.addEventListener('play', () => { if (playBtn) playBtn.textContent = '||'; });
-    audio.addEventListener('pause', () => { if (playBtn) playBtn.textContent = '▶'; });
+    audio.addEventListener('play', () => { if (playBtn) playBtn.textContent = '||'; updateActivePresetButtons(); });
+    audio.addEventListener('pause', () => { if (playBtn) playBtn.textContent = '▶'; updateActivePresetButtons(); });
 
     // Position Recovery
     audio.addEventListener('canplay', () => {
@@ -472,10 +472,11 @@
 
     function updateActivePresetButtons() {
         const activeUrl = state.currentSource?.data?.url;
+        const isPlaying = !audio.paused;
         for (let i = 1; i <= 6; i++) {
             const btn = document.getElementById(`btn-${i}`);
             const preset = state.presets[i];
-            const isActive = preset?.data?.url && activeUrl && preset.data.url === activeUrl;
+            const isActive = isPlaying && preset?.data?.url && activeUrl && preset.data.url === activeUrl;
             btn.classList.toggle('preset-active', Boolean(isActive));
         }
     }
