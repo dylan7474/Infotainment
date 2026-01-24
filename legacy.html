@@ -3,15 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CarStereo Legacy</title>
+    <title>CarStereo Infotainment (Legacy)</title>
     <style>
-        /* --- CORE LAYOUT (NO SCROLL) --- */
-        html, body {
-            height: 100%;
-            width: 100%;
+        body {
             margin: 0;
-            padding: 0;
-            overflow: hidden; /* Critical: Disables scrolling */
             font-family: Arial, sans-serif;
             background: #0a0c10;
             color: #e2e8f0;
@@ -21,318 +16,230 @@
             color: #1e293b;
         }
         .container {
-            height: 100%;
-            display: flex;       /* Modern layout supported by iOS 9 */
-            display: -webkit-flex; /* Safari fallback */
-            flex-direction: column;
-            -webkit-flex-direction: column;
-            padding: 8px;
-            box-sizing: border-box;
+            padding: 16px;
         }
-
-        /* --- SECTIONS --- */
-        .section-fixed {
-            flex: 0 0 auto;
-            -webkit-flex: 0 0 auto;
-            margin-bottom: 6px;
-        }
-
-        .section-grow {
-            flex: 1 1 auto;
-            -webkit-flex: 1 1 auto;
-            min-height: 0;
-            display: flex;
-            display: -webkit-flex;
-            flex-direction: column;
-            -webkit-flex-direction: column;
-        }
-
-        /* --- HEADER --- */
         .header {
             overflow: hidden;
-            display: flex;
-            display: -webkit-flex;
-            justify-content: space-between;
-            align-items: center;
+            margin-bottom: 16px;
         }
         .header h1 {
-            font-size: 16px;
+            float: left;
+            font-size: 20px;
             margin: 0;
-            line-height: 34px;
         }
         .header-actions {
-            display: flex;
-            display: -webkit-flex;
+            float: right;
         }
-        .header-actions .button {
-            padding: 8px 10px;
-            font-size: 11px;
-            margin-left: 4px;
+        .button {
+            display: inline-block;
+            padding: 10px 14px;
+            margin-left: 8px;
+            background: #10b981;
+            color: #0a0c10;
+            border: none;
+            border-radius: 10px;
             font-weight: bold;
-            text-transform: uppercase;
+            cursor: pointer;
+            text-decoration: none;
         }
-
-        /* --- PANELS --- */
+        .button.alt {
+            background: #1f2937;
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .button.is-on {
+            background: #10b981;
+            color: #0a0c10;
+        }
+        .button.warn {
+            background: #ef4444;
+            color: #fff;
+        }
         .panel {
             background: rgba(30, 41, 59, 0.6);
-            border-radius: 8px;
-            padding: 8px;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
         }
         body.day-mode .panel {
             background: rgba(226, 232, 240, 0.9);
         }
-
-        /* --- STATUS ROW --- */
-        .status-row {
-            display: flex;
-            display: -webkit-flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 4px;
-        }
-        .status-left {
-            flex: 1;
-            -webkit-flex: 1;
-        }
-        .status-right {
-            text-align: right;
-            display: flex;
-            display: -webkit-flex;
-            align-items: baseline;
-            justify-content: flex-end;
-        }
-        
         .display {
-            font-size: 20px;
+            font-size: 28px;
             font-weight: bold;
-            letter-spacing: 1px;
-            font-variant-numeric: tabular-nums;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
         }
-        
         .status {
-            font-size: 10px;
+            font-size: 12px;
             text-transform: uppercase;
+            letter-spacing: 1px;
             color: #10b981;
         }
-        
-        .sleep-indicator {
-            color: #f59e0b;
+        body.day-mode .status {
+            color: #047857;
         }
-        .sleep-sep {
-            margin: 0 6px;
-            opacity: 0.5;
-            font-size: 18px;
+        .seek-row {
+            margin-top: 12px;
         }
-
-        .seek-container {
-            display: flex;
-            display: -webkit-flex;
-            align-items: center;
+        .seek-row input[type=range] {
+            width: 100%;
         }
-        .seek-container input {
-            flex-grow: 1;
-            -webkit-flex-grow: 1;
-            margin: 0 8px;
-        }
-        .time-label {
-            font-size: 11px;
-            width: 35px;
-            text-align: right;
-        }
-
-        /* --- CONTROLS --- */
         .controls {
-            display: flex;
-            display: -webkit-flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
+            overflow: hidden;
+            margin-bottom: 12px;
         }
         .controls .button {
-            width: 32%;
-            padding: 14px 0;
-            font-size: 22px;
+            width: 30%;
             text-align: center;
-            border-radius: 8px;
-            background: #1f2937;
-            color: #e2e8f0;
-            border: none;
         }
         .controls .button.main {
             background: #10b981;
             color: #0a0c10;
         }
-        
-        /* Utility Row */
-        .utility-row {
-            display: flex;
-            display: -webkit-flex;
-            align-items: center;
-            margin-top: 6px;
-            justify-content: space-between;
-            gap: 8px;
+        .controls .button.alt {
+            background: #1f2937;
         }
-        
-        .mix-container {
-            flex-grow: 1;
-            -webkit-flex-grow: 1;
-            display: flex;
-            display: -webkit-flex;
-            align-items: center;
-            background: rgba(0,0,0,0.2);
-            padding: 4px 8px;
-            border-radius: 6px;
+        .mix-row {
+            margin-top: 12px;
         }
-        .mix-label { font-size: 10px; margin-right: 6px; opacity: 0.7; }
-        .mix-container input { width: 100%; }
-
-        .sleep-btn {
-            padding: 8px 12px;
-            font-size: 11px;
-            font-weight: bold;
-            white-space: nowrap;
-        }
-
-        /* --- PRESET GRID --- */
         .grid {
-            height: 100%;
-            display: flex;
-            display: -webkit-flex;
-            flex-wrap: wrap;
-            -webkit-flex-wrap: wrap;
-            align-content: stretch;
+            overflow: hidden;
         }
         .grid button {
-            width: 48%;
-            margin: 1%;
-            background: #1f2937;
-            color: #e2e8f0;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            font-size: 24px;
-            font-weight: bold;
-            flex-grow: 1;
-            -webkit-flex-grow: 1;
-            display: flex;
-            display: -webkit-flex;
-            align-items: center;
-            justify-content: center;
+            width: 30%;
+            margin: 5px 1.5%;
         }
         .preset-active {
-            background: #10b981 !important;
-            color: #0a0c10 !important;
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
-            border: none !important;
+            box-shadow: 0 0 10px #10b981;
         }
-        .preset-paused {
-            background: rgba(245, 158, 11, 0.2) !important;
-            color: #f59e0b !important;
-            border: 1px solid #f59e0b !important;
-        }
-
-        /* --- UTILS --- */
-        .button {
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            background: #374151;
-            color: #fff;
-        }
-        .button.alt { background: #374151; }
-        .button.warn { background: #ef4444; }
-        .hidden { display: none !important; }
-        
         .library-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: #0a0c10; z-index: 100;
-            padding: 10px; overflow-y: auto; display: none;
-        }
-        .input {
-            width: 100%; padding: 12px;
-            background: #1f2937; border: 1px solid #374151;
-            color: white; border-radius: 6px; margin-bottom: 8px;
-            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 12, 16, 0.98);
+            padding: 16px;
+            display: none;
+            overflow-y: auto;
+            z-index: 100;
         }
         .library-entry {
-            background: #1f2937; padding: 12px; margin-bottom: 8px; border-radius: 6px;
+            margin-bottom: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            background: rgba(30, 41, 59, 0.6);
+        }
+        .library-entry h3 {
+            margin: 0 0 8px;
+            font-size: 16px;
+        }
+        .library-entry .button {
+            padding: 8px 10px;
+            font-size: 12px;
+        }
+        .label {
+            display: block;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: 0.6;
+            margin-bottom: 4px;
+        }
+        .input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        body.day-mode .input {
+            background: #fff;
+            color: #1e293b;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="section-fixed header">
-            <h1>LEGACY</h1>
+        <div class="header">
+            <h1>INFOTAINMENT LEGACY <span>4.3</span></h1>
             <div class="header-actions">
-                <button class="button alt" id="noise-toggle">Off</button>
-                <button class="button alt" id="noise-type-toggle">Wht</button>
-                <button class="button alt" id="day-mode-btn">☀</button>
-                <button class="button" id="library-btn">Lib</button>
+                <button class="button alt" id="noise-toggle">Noise Off</button>
+                <button class="button alt" id="noise-type-toggle">White</button>
+                <button class="button alt" id="day-mode-btn">☀️</button>
+                <button class="button" id="library-btn">LIBRARY</button>
             </div>
         </div>
 
-        <div class="section-fixed panel">
-            <div class="status-row">
-                <div class="status status-left" id="mode-indicator">Ready</div>
-                <div class="status-right">
-                    <span class="display" id="display-title">00:00</span>
-                    <span class="display sleep-sep" id="sleep-sep" style="display:none">/</span>
-                    <span class="display sleep-indicator" id="sleep-timer-display" style="display:none"></span>
-                </div>
-            </div>
-            <div class="seek-container">
-                <span class="time-label" id="current-time">0:00</span>
+        <div class="panel">
+            <div class="status" id="mode-indicator">Connected</div>
+            <div class="display" id="display-title">00:00</div>
+            <div class="display" id="sleep-timer-display">Sleep: Off</div>
+            <div class="seek-row">
+                <span class="label">Progress</span>
                 <input type="range" id="seek-bar" min="0" max="0" value="0" step="1">
-                <span class="time-label" id="duration">0:00</span>
+                <div class="label" id="duration">00:00</div>
             </div>
         </div>
 
-        <div class="section-fixed panel">
+        <div class="panel">
             <div class="controls">
                 <button class="button alt" id="prev-btn">⏮</button>
                 <button class="button main" id="play-btn">▶</button>
                 <button class="button alt" id="next-btn">⏭</button>
             </div>
-            <div class="utility-row">
-                <div class="mix-container">
-                    <span class="mix-label">Mix</span>
-                    <input type="range" id="noise-balance" min="0" max="1" step="0.01" value="0.33">
-                </div>
-                <button class="button alt sleep-btn" id="sleep-15">15m</button>
-                <button class="button alt sleep-btn" id="sleep-30">30m</button>
+            <div class="mix-row">
+                <span class="label">Noise/Stream Mix</span>
+                <div class="label" id="noise-balance-readout">Noise 33% · Stream 67%</div>
+                <input type="range" id="noise-balance" min="0" max="1" step="0.01" value="0.33">
             </div>
         </div>
 
-        <div class="section-grow panel presets">
+        <div class="panel">
+            <span class="label">Sleep Timer</span>
+            <button class="button alt" id="sleep-15">Sleep in 15 mins</button>
+            <button class="button alt" id="sleep-30">Sleep in 30 mins</button>
+        </div>
+
+        <div class="panel">
+            <span class="label">Presets</span>
             <div class="grid" id="preset-grid">
-                <button data-preset="1">1</button>
-                <button data-preset="2">2</button>
-                <button data-preset="3">3</button>
-                <button data-preset="4">4</button>
-                <button data-preset="5">5</button>
-                <button data-preset="6">6</button>
-                <button data-preset="7">7</button>
-                <button data-preset="8">8</button>
+                <button class="button alt" data-preset="1">Preset 1</button>
+                <button class="button alt" data-preset="2">Preset 2</button>
+                <button class="button alt" data-preset="3">Preset 3</button>
+                <button class="button alt" data-preset="4">Preset 4</button>
+                <button class="button alt" data-preset="5">Preset 5</button>
+                <button class="button alt" data-preset="6">Preset 6</button>
             </div>
         </div>
     </div>
 
     <div class="library-overlay" id="overlay-library">
         <div class="header">
-            <h1>Library</h1>
-            <button class="button warn" id="exit-btn">Close</button>
+            <h1>Media Explorer</h1>
+            <div class="header-actions">
+                <button class="button alt" id="manager-btn">Manage Radio</button>
+                <button class="button warn" id="exit-btn">Exit</button>
+            </div>
         </div>
-        <input type="text" id="lib-search" class="input" placeholder="Search...">
+        <div class="panel">
+            <span class="label">Search</span>
+            <input type="text" id="lib-search" class="input" placeholder="Search library...">
+        </div>
         <div id="library-content"></div>
-        <button class="button alt" id="manager-btn" style="margin-top:20px; width:100%">Manager Mode</button>
-        <div id="radio-form" style="display:none; margin-top:20px;">
-            <input type="text" id="radio-name" class="input" placeholder="Name">
-            <input type="text" id="radio-url" class="input" placeholder="URL">
-            <button class="button" id="save-station">Save</button>
-            <button class="button alt" id="toggle-radio-form">Cancel</button>
+        <div class="panel">
+            <button class="button alt" id="toggle-radio-form">Add Radio Station (+)</button>
+            <div id="radio-form" style="display:none; margin-top:12px;">
+                <input type="text" id="radio-name" class="input" placeholder="Name" style="margin-bottom:8px;">
+                <input type="text" id="radio-url" class="input" placeholder="URL" style="margin-bottom:8px;">
+                <button class="button" id="save-station">Save Station</button>
+            </div>
         </div>
-        <button class="button alt" id="toggle-radio-form-btn" style="margin-top:10px; width:100%">Add Station</button>
     </div>
 
-    <audio id="audio-player" preload="metadata" playsinline webkit-playsinline crossorigin="anonymous"></audio>
+    <audio id="audio-player" preload="metadata" playsinline webkit-playsinline></audio>
 
 <script>
     var BOOKMARKS_ENDPOINT = './api/bookmarks';
@@ -360,27 +267,19 @@
     var seekBar = document.getElementById('seek-bar');
     var modeIndicator = document.getElementById('mode-indicator');
     var defaultModeText = modeIndicator.textContent;
-    
     var sleepDisplay = document.getElementById('sleep-timer-display');
-    var sleepSep = document.getElementById('sleep-sep');
-    
+    var defaultSleepText = sleepDisplay.textContent;
     var timeDisplay = document.getElementById('display-title');
-    var currentTimeDisplay = document.getElementById('current-time');
-    var durationDisplay = document.getElementById('duration');
-    
     var noiseToggleBtn = document.getElementById('noise-toggle');
     var noiseTypeBtn = document.getElementById('noise-type-toggle');
     var noiseBalanceControl = document.getElementById('noise-balance');
-    
-    /* --- AUDIO ENGINE --- */
-    var audioCtx = null;
-    var audioSource = null;
-    var audioGain = null;
-    var noiseGain = null;
+    var noiseBalanceReadout = document.getElementById('noise-balance-readout');
+    var noiseContext = null;
     var noiseSource = null;
-    
+    var noiseGain = null;
     var baseNoiseGain = 0.12;
     var blueNoiseGainBoost = 3;
+    var noiseBalanceLimits = { min: 0, max: 1 };
     var noiseBalance = 0.33;
     var noiseType = 'white';
     var noiseIsOn = false;
@@ -406,64 +305,40 @@
 
     function updateNoiseUI() {
         if (noiseToggleBtn) {
-            noiseToggleBtn.textContent = noiseIsOn ? 'On' : 'Off';
-            if(noiseIsOn) {
-                noiseToggleBtn.style.background = '#10b981';
-                noiseToggleBtn.style.color = '#000';
+            noiseToggleBtn.textContent = noiseIsOn ? 'Noise On' : 'Noise Off';
+            if (noiseIsOn) {
+                noiseToggleBtn.className = noiseToggleBtn.className.replace(' is-on', '') + ' is-on';
             } else {
-                noiseToggleBtn.style.background = '';
-                noiseToggleBtn.style.color = '';
+                noiseToggleBtn.className = noiseToggleBtn.className.replace(' is-on', '');
             }
         }
         if (noiseTypeBtn) {
-            noiseTypeBtn.textContent = noiseType === 'blue' ? 'Blu' : 'Wht';
+            noiseTypeBtn.textContent = noiseType === 'blue' ? 'Blue' : 'White';
         }
-    }
-
-    /* --- AUDIO ROUTING FOR VOLUME CONTROL --- */
-    function initAudio() {
-        if (audioCtx) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            return;
-        }
-        var AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        audioCtx = new AudioContextClass();
-        
-        // Route Music Track through WebAudio to bypass iOS volume lock
-        audioSource = audioCtx.createMediaElementSource(audio);
-        audioGain = audioCtx.createGain();
-        audioSource.connect(audioGain);
-        audioGain.connect(audioCtx.destination);
-        
-        updateNoiseGain();
     }
 
     function getNoiseMix() {
-        return Math.min(1, Math.max(0, noiseBalance));
+        var range = noiseBalanceLimits.max - noiseBalanceLimits.min;
+        if (range === 0) return 0;
+        return Math.min(1, Math.max(0, (noiseBalance - noiseBalanceLimits.min) / range));
+    }
+
+    function updateNoiseBalanceReadout() {
+        var mix = getNoiseMix();
+        var noisePercent = Math.round(mix * 100);
+        var streamPercent = Math.round((1 - mix) * 100);
+        if (noiseBalanceReadout) {
+            noiseBalanceReadout.textContent = 'Noise ' + noisePercent + '% · Stream ' + streamPercent + '%';
+        }
     }
 
     function updateNoiseGain() {
         var mix = getNoiseMix();
-        
-        // Explicitly mute if we want 0 volume to force iOS to silence
-        if (mix >= 0.98) {
-             audio.muted = true;
-        } else {
-             audio.muted = false;
-        }
-        
-        // 1. Control Music Volume
-        if (audioGain) {
-            audioGain.gain.value = 1 - mix;
-        } else {
-            audio.volume = 1 - mix;
-        }
-
-        // 2. Control Noise Volume
         if (noiseGain) {
             var noiseTypeBoost = noiseType === 'blue' ? blueNoiseGainBoost : 1;
             noiseGain.gain.value = baseNoiseGain * mix * noiseTypeBoost;
         }
+        audio.volume = 1 - mix;
     }
 
     function createNoiseBuffer(context, type) {
@@ -486,30 +361,34 @@
     }
 
     function startNoise() {
-        initAudio(); // Ensure context is ready
-        
-        if (noiseSource) {
-            try { noiseSource.stop(); noiseSource.disconnect(); } catch(e){}
+        if (!noiseContext) {
+            var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            noiseContext = new AudioContextClass();
         }
-        
-        noiseSource = audioCtx.createBufferSource();
-        noiseSource.buffer = createNoiseBuffer(audioCtx, noiseType);
+        if (noiseContext.state === 'suspended') {
+            noiseContext.resume();
+        }
+        if (noiseSource) {
+            noiseSource.stop();
+            noiseSource.disconnect();
+        }
+        noiseSource = noiseContext.createBufferSource();
+        noiseSource.buffer = createNoiseBuffer(noiseContext, noiseType);
         noiseSource.loop = true;
-        
-        noiseGain = audioCtx.createGain();
-        noiseSource.connect(noiseGain);
-        noiseGain.connect(audioCtx.destination);
-        
+        noiseGain = noiseContext.createGain();
         updateNoiseGain();
+        noiseSource.connect(noiseGain);
+        noiseGain.connect(noiseContext.destination);
         noiseSource.start();
         noiseIsOn = true;
         updateNoiseUI();
-        showModeMessage('NOISE ON');
+        showModeMessage('NOISE ' + noiseType.toUpperCase());
     }
 
     function stopNoise() {
         if (noiseSource) {
-            try { noiseSource.stop(); noiseSource.disconnect(); } catch(e){}
+            noiseSource.stop();
+            noiseSource.disconnect();
             noiseSource = null;
         }
         noiseIsOn = false;
@@ -518,9 +397,13 @@
     }
 
     function toggleNoise() {
-        if (noiseIsOn) stopNoise(); else startNoise();
+        if (noiseIsOn) {
+            stopNoise();
+        } else {
+            startNoise();
+        }
     }
-    
+
     function toggleNoiseType() {
         noiseType = noiseType === 'white' ? 'blue' : 'white';
         if (noiseIsOn) {
@@ -530,7 +413,6 @@
         }
     }
 
-    /* --- LIBRARY & SYNC --- */
     function loadCachedLibrary() {
         try {
             var cached = JSON.parse(localStorage.getItem(LIBRARY_CACHE_KEY));
@@ -538,7 +420,9 @@
                 state.books = cached.books;
                 return cached;
             }
-        } catch (e) { return null; }
+        } catch (e) {
+            return null;
+        }
         return null;
     }
 
@@ -548,7 +432,9 @@
                 books: state.books,
                 cachedAt: new Date().toISOString()
             }));
-        } catch (e) {}
+        } catch (e) {
+            return;
+        }
     }
 
     function request(method, url, body, callback) {
@@ -571,16 +457,21 @@
     function sync(method, body, callback) {
         var url = BOOKMARKS_ENDPOINT + '?user=' + encodeURIComponent(USER_ID);
         request(method, url, body, function (err, res) {
-            if (err) { if(callback) callback(null); return; }
-            try { if(callback) callback(JSON.parse(res)); } catch (e) { if(callback) callback(null); }
+            if (err) {
+                callback(null);
+                return;
+            }
+            try {
+                callback(JSON.parse(res));
+            } catch (e) {
+                callback(null);
+            }
         });
     }
 
-    /* --- PLAYBACK UI --- */
     function updateCurrentTimeDisplay(value) {
         var timeText = formatTime(value);
-        if (currentTimeDisplay) currentTimeDisplay.textContent = timeText;
-        if (timeDisplay && !audio.paused) timeDisplay.textContent = timeText;
+        if (timeDisplay) timeDisplay.textContent = timeText;
     }
 
     function formatTime(seconds) {
@@ -595,8 +486,11 @@
     }
 
     function togglePlay() {
-        initAudio(); // Initialize audio engine on user interaction
-        if (audio.paused) safePlay(); else audio.pause();
+        if (audio.paused) {
+            safePlay();
+        } else {
+            audio.pause();
+        }
     }
 
     function toggleDayMode() {
@@ -626,13 +520,7 @@
         var remainingSeconds = Math.floor(remainingMs / 1000);
         var minutes = Math.floor(remainingSeconds / 60);
         var seconds = remainingSeconds % 60;
-        
-        if (sleepDisplay && sleepSep) {
-            sleepDisplay.style.display = 'inline';
-            sleepSep.style.display = 'inline';
-            sleepDisplay.textContent = pad(minutes) + ':' + pad(seconds);
-        }
-        
+        sleepDisplay.textContent = 'Sleep: ' + pad(minutes) + ':' + pad(seconds);
         if (remainingMs === 0) endSleepTimer();
     }
 
@@ -643,12 +531,12 @@
         sleepIntervalId = null;
         sleepEndTime = null;
         audio.pause();
-        
-        if (sleepDisplay && sleepSep) {
-            sleepDisplay.style.display = 'none';
-            sleepSep.style.display = 'none';
-            sleepDisplay.textContent = '';
-        }
+        sleepDisplay.textContent = 'Sleep: Ended';
+        setTimeout(function () {
+            if (!sleepEndTime) {
+                sleepDisplay.textContent = defaultSleepText;
+            }
+        }, 3000);
     }
 
     function setSleepTimer(minutes) {
@@ -668,7 +556,7 @@
 
     function toggleManager() {
         state.isManagerMode = !state.isManagerMode;
-        document.getElementById('manager-btn').textContent = state.isManagerMode ? 'Done' : 'Manager Mode';
+        document.getElementById('manager-btn').textContent = state.isManagerMode ? 'Done' : 'Manage Radio';
         renderLibrary();
     }
 
@@ -684,7 +572,7 @@
         pendingResumeTime = state.playbackPositions[trackKey] || 0;
         audio.pause();
         audio.src = track.url;
-        audio.load(); // Restored: Critical for iOS playback
+        audio.load();
         safePlay();
         toggleView(false);
         updateActivePresetButtons();
@@ -695,7 +583,7 @@
         state.currentSource = { type: 'radio', data: station };
         audio.pause();
         audio.src = station.url;
-        audio.load(); // Restored
+        audio.load();
         safePlay();
         toggleView(false);
         updateActivePresetButtons();
@@ -703,7 +591,6 @@
 
     function handlePresetStart(id) {
         state.isHolding = false;
-        initAudio(); // Init audio engine
         clearTimeout(state.longPressTimer);
         state.longPressTimer = setTimeout(function () {
             if (state.currentSource) {
@@ -733,7 +620,20 @@
     }
 
     function flashPreset(id) {
-        // Flash handled via style refresh
+        var buttons = document.querySelectorAll('[data-preset]');
+        var i;
+        for (i = 0; i < buttons.length; i++) {
+            if (buttons[i].getAttribute('data-preset') == id) {
+                buttons[i].style.backgroundColor = '#10b981';
+                buttons[i].style.color = '#0a0c10';
+                setTimeout(function (btn) {
+                    return function () {
+                        btn.style.backgroundColor = '';
+                        btn.style.color = '';
+                    };
+                }(buttons[i]), 500);
+            }
+        }
     }
 
     function updatePresetButtons() {
@@ -742,25 +642,24 @@
         for (i = 0; i < buttons.length; i++) {
             var presetId = buttons[i].getAttribute('data-preset');
             var preset = state.presets[presetId];
-            buttons[i].textContent = preset ? (preset.type === 'radio' ? preset.data.name : (preset.data.name || preset.data.bookName)) : presetId;
+            buttons[i].textContent = preset ? (preset.type === 'radio' ? preset.data.name : (preset.data.name || preset.data.bookName)) : 'Preset ' + presetId;
         }
         updateActivePresetButtons();
     }
 
     function updateActivePresetButtons() {
         var activeUrl = state.currentSource && state.currentSource.data ? state.currentSource.data.url : null;
-        var isPaused = audio.paused;
         var buttons = document.querySelectorAll('[data-preset]');
         var i;
         for (i = 0; i < buttons.length; i++) {
             var presetId = buttons[i].getAttribute('data-preset');
             var preset = state.presets[presetId];
             var isActive = preset && preset.data && activeUrl && preset.data.url === activeUrl;
-            var nextClass = buttons[i].className.replace(' preset-active', '').replace(' preset-paused', '');
             if (isActive) {
-                nextClass += isPaused ? ' preset-paused' : ' preset-active';
+                buttons[i].className = buttons[i].className + ' preset-active';
+            } else {
+                buttons[i].className = buttons[i].className.replace(' preset-active', '');
             }
-            buttons[i].className = nextClass;
         }
     }
 
@@ -775,7 +674,7 @@
             var station = stations[i];
             if (!station) continue;
             if ((station.name || '').toLowerCase().indexOf(query) === -1) continue;
-            container.appendChild(createLibEntry(station.name || 'Unnamed', function (s) {
+            container.appendChild(createLibEntry(station.name || 'Unnamed Station', function (s) {
                 return function () { playRadio(s); };
             }(station), 'radio', station, i));
         }
@@ -797,62 +696,80 @@
     }
 
     function createLibEntry(label, tuneFn, type, data, idx) {
+        var entryData = data || {};
         var div = document.createElement('div');
         div.className = 'library-entry';
-        
-        var row = document.createElement('div');
-        row.style.display = 'flex';
-        row.style.justifyContent = 'space-between';
-        row.style.alignItems = 'center';
 
-        var title = document.createElement('div');
+        var title = document.createElement('h3');
         title.textContent = label;
-        title.style.fontWeight = 'bold';
-        title.style.flexGrow = '1';
-        row.appendChild(title);
+        div.appendChild(title);
 
         var tuneButton = document.createElement('button');
-        tuneButton.className = 'button main';
+        tuneButton.className = 'button';
         tuneButton.textContent = 'Tune';
         tuneButton.onclick = tuneFn;
-        row.appendChild(tuneButton);
-        
-        div.appendChild(row);
+        div.appendChild(tuneButton);
 
-        var pRow = document.createElement('div');
-        pRow.style.marginTop = '8px';
-        for (var p = 1; p <= 8; p++) {
-            var btn = document.createElement('button');
-            btn.textContent = p;
-            btn.className = 'button alt';
-            btn.style.marginRight = '4px';
-            btn.style.width = '30px';
-            btn.onclick = function(presetNum){
-                return function() {
-                    state.presets[presetNum] = {type:type, data:data};
-                    sync('POST', state);
+        var presetWrap = document.createElement('div');
+        presetWrap.style.marginTop = '8px';
+        var p;
+        for (p = 1; p <= 6; p++) {
+            var pButton = document.createElement('button');
+            pButton.className = 'button alt';
+            pButton.textContent = 'P' + p;
+            pButton.setAttribute('data-assign', p);
+            pButton.onclick = function (presetNum) {
+                return function () {
+                    var existing = state.presets[presetNum];
+                    if (existing && existing.data && existing.data.url === entryData.url) {
+                        delete state.presets[presetNum];
+                    } else {
+                        state.presets[presetNum] = { type: type, data: entryData };
+                    }
+                    sync('POST', state, function () {});
                     updatePresetButtons();
                     renderLibrary();
-                }
+                };
             }(p);
-            pRow.appendChild(btn);
+            presetWrap.appendChild(pButton);
         }
-        div.appendChild(pRow);
-        
+        div.appendChild(presetWrap);
+
         if (state.isManagerMode && type === 'radio' && idx !== null) {
+            var tools = document.createElement('div');
+            tools.style.marginTop = '8px';
+
+            var editBtn = document.createElement('button');
+            editBtn.className = 'button alt';
+            editBtn.textContent = 'Rename';
+            editBtn.onclick = function () { editRadio(idx); };
+
             var delBtn = document.createElement('button');
             delBtn.className = 'button warn';
             delBtn.textContent = 'Delete';
-            delBtn.style.marginTop = '8px';
-            delBtn.style.width = '100%';
             delBtn.onclick = function () { deleteRadio(idx); };
-            div.appendChild(delBtn);
+
+            tools.appendChild(editBtn);
+            tools.appendChild(delBtn);
+            div.appendChild(tools);
         }
+
         return div;
     }
 
+    function editRadio(idx) {
+        var station = state.radioStations[idx];
+        var name = prompt('New Name:', station.name);
+        var url = prompt('New URL:', station.url);
+        if (name && url) {
+            state.radioStations[idx] = { name: name, url: url };
+            sync('POST', state, function () {});
+            renderLibrary();
+        }
+    }
+
     function deleteRadio(idx) {
-        if (confirm('Delete?')) {
+        if (confirm('Delete station?')) {
             state.radioStations.splice(idx, 1);
             sync('POST', state, function () {});
             renderLibrary();
@@ -871,11 +788,17 @@
     }
 
     function safePlay() {
-        initAudio(); // Ensure engine is ready
         var playPromise;
-        try { playPromise = audio.play(); } catch (e) { showModeMessage('TAP PLAY'); return; }
+        try {
+            playPromise = audio.play();
+        } catch (e) {
+            showModeMessage('TAP PLAY TO START');
+            return;
+        }
         if (playPromise && typeof playPromise.then === 'function') {
-            playPromise.catch(function () { showModeMessage('TAP PLAY'); });
+            playPromise.catch(function () {
+                showModeMessage('TAP PLAY TO START');
+            });
         }
     }
 
@@ -900,21 +823,31 @@
 
     function fetchLibrary(callback) {
         request('GET', './books/', null, function (err, resText) {
-            if (err) { callback(false); return; }
+            if (err) {
+                callback(false);
+                return;
+            }
+
             var links = parseLinks(resText);
             var folders = [];
             var files = [];
-            for (var i = 0; i < links.length; i++) {
+            var i;
+            for (i = 0; i < links.length; i++) {
                 var link = links[i];
                 if (!link || link.indexOf('?') === 0 || link.indexOf('/') === 0) continue;
-                if (endsWith(link, '/')) folders.push(link);
-                else if (endsWith(link.toLowerCase(), '.mp3')) files.push(link);
+                if (endsWith(link, '/')) {
+                    folders.push(link);
+                } else if (endsWith(link.toLowerCase(), '.mp3')) {
+                    files.push(link);
+                }
             }
+
             var latestBooks = {};
-            for (var i = 0; i < files.length; i++) {
+            for (i = 0; i < files.length; i++) {
                 var fileName = decodeURIComponent(files[i]);
                 latestBooks[fileName] = [{ name: fileName, url: './books/' + files[i] }];
             }
+
             var folderIndex = 0;
             function nextFolder() {
                 if (folderIndex >= folders.length) {
@@ -950,13 +883,20 @@
         sync('GET', null, function (data) {
             if (data) {
                 for (var key in data) {
-                    if (data.hasOwnProperty(key)) state[key] = data[key];
+                    if (data.hasOwnProperty(key)) {
+                        state[key] = data[key];
+                    }
                 }
             }
-            loadCachedLibrary();
+            var cachedLibrary = loadCachedLibrary();
             fetchLibrary(function (fetched) {
-                if (fetched) showModeMessage('SYNCED');
-                else showModeMessage('OFFLINE');
+                if (fetched) {
+                    showModeMessage('LIBRARY SYNCED');
+                } else if (cachedLibrary) {
+                    showModeMessage('OFFLINE CACHE');
+                } else {
+                    showModeMessage('OFFLINE MODE');
+                }
                 updatePresetButtons();
             });
         });
@@ -964,13 +904,10 @@
 
     audio.addEventListener('play', function () {
         document.getElementById('play-btn').textContent = '||';
-        updateActivePresetButtons();
     });
     audio.addEventListener('pause', function () {
         document.getElementById('play-btn').textContent = '▶';
-        updateActivePresetButtons();
     });
-    audio.addEventListener('ended', function () { updateActivePresetButtons(); });
     audio.addEventListener('canplay', function () {
         if (pendingResumeTime > 0) {
             audio.currentTime = pendingResumeTime;
@@ -980,10 +917,10 @@
 
     audio.ontimeupdate = function () {
         if (!isDragging) {
-            if(seekBar.max != (audio.duration || 0)) seekBar.max = audio.duration || 0;
             seekBar.value = audio.currentTime;
+            seekBar.max = audio.duration || 0;
             updateCurrentTimeDisplay(audio.currentTime);
-            if(durationDisplay) durationDisplay.textContent = formatTime(audio.duration);
+            document.getElementById('duration').textContent = formatTime(audio.duration);
             if (state.currentSource && state.currentSource.type === 'book' && Math.floor(audio.currentTime) % 10 === 0) savePosition();
         }
     };
@@ -999,6 +936,7 @@
 
     noiseBalanceControl.oninput = function () {
         noiseBalance = parseFloat(noiseBalanceControl.value);
+        updateNoiseBalanceReadout();
         updateNoiseGain();
     };
 
@@ -1006,19 +944,18 @@
     bindTap(document.getElementById('library-btn'), function () { toggleView(true); });
     bindTap(document.getElementById('exit-btn'), function () { toggleView(false); });
     bindTap(document.getElementById('manager-btn'), toggleManager);
-    bindTap(document.getElementById('toggle-radio-form-btn'), toggleRadioForm);
     bindTap(document.getElementById('toggle-radio-form'), toggleRadioForm);
     bindTap(document.getElementById('save-station'), addRadioStation);
     document.getElementById('lib-search').oninput = renderLibrary;
     bindTap(document.getElementById('noise-toggle'), toggleNoise);
     bindTap(document.getElementById('noise-type-toggle'), toggleNoiseType);
 
+    bindTap(document.getElementById('sleep-15'), function () { setSleepTimer(15); });
+    bindTap(document.getElementById('sleep-30'), function () { setSleepTimer(30); });
+
     bindTap(document.getElementById('play-btn'), togglePlay);
     bindTap(document.getElementById('prev-btn'), function () { smartSeek(-15); });
     bindTap(document.getElementById('next-btn'), function () { smartSeek(30); });
-    
-    bindTap(document.getElementById('sleep-15'), function () { setSleepTimer(15); });
-    bindTap(document.getElementById('sleep-30'), function () { setSleepTimer(30); });
 
     var presetButtons = document.querySelectorAll('[data-preset]');
     var i;
@@ -1031,6 +968,7 @@
         presetButtons[i].ontouchcancel = handlePresetCancel;
     }
 
+    updateNoiseBalanceReadout();
     updateNoiseGain();
     updateNoiseUI();
 
