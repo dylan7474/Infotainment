@@ -2,7 +2,7 @@
 
 # --- Configuration ---
 PORT_ARG=${1:-3005}
-REPO_URL="http://phobos.dylanjones.org:3000/djones/CarStereoStyleAudioApp.git"
+REPO_URL="https://github.com/dylan7474/Infotainment.git"
 TARGET_DIR="/mnt/media/docker/carstereo/src"
 BOOKS_DIR="/mnt/media/Audio/Audible"
 DATA_DIR="/mnt/media/docker/carstereo/data"
