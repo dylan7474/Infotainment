@@ -83,16 +83,10 @@
                 <div class="flex items-center justify-between mb-2">
                     <div class="text-[10px] font-bold tracking-widest text-emerald-500 uppercase" id="mode-indicator">Connected</div>
                 </div>
-                <h2 class="time-display time-display-glow text-4xl sm:text-6xl font-bold mb-2 truncate" id="display-title">00:00</h2>
+                <h2 class="time-display time-display-glow text-3xl sm:text-5xl font-bold mb-2 truncate" id="display-title">00:00 / Sleep Off</h2>
             </div>
             
             <div class="w-full">
-                <div class="flex justify-between px-4 sm:px-8 text-[11px] mb-2 font-semibold opacity-60">
-                    <div class="flex items-center gap-3">
-                        <span id="progress-sleep" class="time-display">00:00 / Sleep Off</span>
-                    </div>
-                    <span id="duration" class="time-display">00:00</span>
-                </div>
                 <input type="range" id="seek-bar" class="seek-bar hidden sm:block" value="0" step="1">
             </div>
         </div>
@@ -171,7 +165,6 @@
     const seekBars = Array.from(document.querySelectorAll('#seek-bar, #seek-bar-mobile'));
     const modeIndicator = document.getElementById('mode-indicator');
     const defaultModeText = modeIndicator.textContent;
-    const progressSleepDisplay = document.getElementById('progress-sleep');
     const defaultSleepStatus = 'Sleep Off';
     let sleepStatusText = defaultSleepStatus;
     const timeDisplay = document.getElementById('display-title');
@@ -199,9 +192,9 @@
     }
 
     function updateProgressSleepDisplay(currentTimeText = null) {
-        if (!progressSleepDisplay) return;
+        if (!timeDisplay) return;
         const timeText = currentTimeText ?? formatTime(audio.currentTime);
-        progressSleepDisplay.textContent = `${timeText} / ${sleepStatusText}`;
+        timeDisplay.textContent = `${timeText} / ${sleepStatusText}`;
     }
 
     function loadCachedLibrary() {
@@ -577,14 +570,12 @@
                 bar.max = audio.duration || 0;
             });
             updateCurrentTimeDisplay(audio.currentTime);
-            document.getElementById('duration').textContent = formatTime(audio.duration);
             if (state.currentSource?.type === 'book' && Math.floor(audio.currentTime) % 10 === 0) savePosition();
         }
     };
 
     function updateCurrentTimeDisplay(value) {
         const timeText = formatTime(value);
-        if (timeDisplay) timeDisplay.textContent = timeText;
         updateProgressSleepDisplay(timeText);
     }
 
