@@ -1,4 +1,4 @@
-# CarStereoStyleAudioApp   (Use the local repo version as legacy.html is broken in this version)
+# CarStereoStyleAudioApp
 
 CarStereoStyleAudioApp is a lightweight web app that presents a car-stereo-inspired audio interface. It provides a retro dashboard-style layout for browsing and controlling audio playback with clear, tactile-style controls.
 
