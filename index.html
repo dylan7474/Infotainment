@@ -78,7 +78,7 @@
     </header>
 
     <main id="view-player" class="flex-1 flex flex-col gap-6">
-        <div class="flex-none h-28 sm:h-auto sm:flex-1 glass-card lcd-display flex flex-col justify-between relative overflow-hidden">
+        <div class="flex-none h-24 sm:h-56 glass-card lcd-display flex flex-col justify-between relative overflow-hidden">
             <div class="p-4 sm:p-8">
                 <div class="flex items-center justify-between mb-2">
                     <div class="text-[10px] font-bold tracking-widest text-emerald-500 uppercase" id="mode-indicator">Connected</div>
@@ -89,8 +89,7 @@
             <div class="w-full">
                 <div class="flex justify-between px-4 sm:px-8 text-[11px] mb-2 font-semibold opacity-60">
                     <div class="flex items-center gap-3">
-                        <span id="current-time" class="time-display">00:00</span>
-                        <span id="sleep-timer-display" class="time-display">Sleep: Off</span>
+                        <span id="progress-sleep" class="time-display">00:00 / Sleep Off</span>
                     </div>
                     <span id="duration" class="time-display">00:00</span>
                 </div>
@@ -173,8 +172,9 @@
     const seekBars = Array.from(document.querySelectorAll('#seek-bar, #seek-bar-mobile'));
     const modeIndicator = document.getElementById('mode-indicator');
     const defaultModeText = modeIndicator.textContent;
-    const sleepDisplay = document.getElementById('sleep-timer-display');
-    const defaultSleepText = sleepDisplay.textContent;
+    const progressSleepDisplay = document.getElementById('progress-sleep');
+    const defaultSleepStatus = 'Sleep Off';
+    let sleepStatusText = defaultSleepStatus;
     const timeDisplay = document.getElementById('display-title');
     const noiseToggleBtn = document.getElementById('noise-toggle');
     const noiseTypeBtn = document.getElementById('noise-type-toggle');
@@ -197,6 +197,12 @@
                 modeIndicator.textContent = defaultModeText;
             }
         }, timeout);
+    }
+
+    function updateProgressSleepDisplay(currentTimeText = null) {
+        if (!progressSleepDisplay) return;
+        const timeText = currentTimeText ?? formatTime(audio.currentTime);
+        progressSleepDisplay.textContent = `${timeText} / ${sleepStatusText}`;
     }
 
     function loadCachedLibrary() {
@@ -557,8 +563,8 @@
 
     function updateCurrentTimeDisplay(value) {
         const timeText = formatTime(value);
-        document.getElementById('current-time').textContent = timeText;
         if (timeDisplay) timeDisplay.textContent = timeText;
+        updateProgressSleepDisplay(timeText);
     }
 
     function formatTime(s) { if(isNaN(s)) return "00:00"; const m=Math.floor(s/60); const sec=Math.floor(s%60); return `${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`; }
@@ -573,8 +579,9 @@
         const minutes = Math.floor(remainingSeconds / 60);
         const seconds = remainingSeconds % 60;
         const remainingLabel = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        modeIndicator.textContent = `SLEEP: ${remainingLabel}`;
-        sleepDisplay.textContent = `Sleep timer: ${remainingLabel}`;
+        sleepStatusText = `Sleep ${remainingLabel}`;
+        modeIndicator.textContent = 'SLEEP TIMER';
+        updateProgressSleepDisplay();
         if (remainingMs === 0) endSleepTimer();
     }
 
@@ -586,11 +593,13 @@
         sleepEndTime = null;
         audio.pause();
         modeIndicator.textContent = 'SLEEP TIMER ENDED';
-        sleepDisplay.textContent = 'Sleep timer: Ended';
+        sleepStatusText = 'Sleep Ended';
+        updateProgressSleepDisplay();
         setTimeout(() => {
             if (!sleepEndTime) {
                 modeIndicator.textContent = defaultModeText;
-                sleepDisplay.textContent = defaultSleepText;
+                sleepStatusText = defaultSleepStatus;
+                updateProgressSleepDisplay();
             }
         }, 3000);
     }
