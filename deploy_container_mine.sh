@@ -9,7 +9,7 @@ DATA_DIR="/mnt/media/docker/carstereo/data"
 SERVICE_UID=1002
 SERVICE_GID=1002
 
-echo "=== Deploying CarStereo AudioPlayer (Laptop Mode) ==="
+echo "=== Deploying CarStereo AudioPlayer (Cosmic Edition) ==="
 
 # 1. Environment Setup
 mkdir -p "$BOOKS_DIR"
@@ -20,7 +20,7 @@ mkdir -p "$(dirname "$TARGET_DIR")"
 git clone "$REPO_URL" "$TARGET_DIR"
 cd "$TARGET_DIR"
 
-# 2. Generate robust server.js
+# 2. Generate robust server.js (Same logic as original)
 cat <<EOF > server.js
 const http = require('http');
 const fs = require('fs');
@@ -94,7 +94,8 @@ const handleApiBookmarks = (req, res, url) => {
 };
 
 const serveStatic = (req, res, url) => {
-    const pathname = decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname);
+    // UPDATED: Allow index2.html to be served as default if needed
+    const pathname = decodeURIComponent(url.pathname === '/' ? '/index2.html' : url.pathname);
     const filePath = path.join(STATIC_ROOT, path.normalize(pathname).replace(/^(\.\.[\/\\\\])+/, ''));
 
     fs.stat(filePath, (err, stats) => {
@@ -143,11 +144,12 @@ http.createServer((req, res) => {
 }).listen(PORT);
 EOF
 
-# 3. Create Dockerfile (CRITICAL: Must exist before docker build)
+# 3. Create Dockerfile (UPDATED: Added index2.html to COPY)
 cat <<EOF > Dockerfile
 FROM node:20-slim
 WORKDIR /app
-COPY server.js index.html legacy.html ./
+# Ensure index2.html is included in the build
+COPY server.js index.html index2.html legacy.html ./
 RUN mkdir books data && chown -R $SERVICE_UID:$SERVICE_GID /app
 USER $SERVICE_UID
 EXPOSE $PORT_ARG
@@ -172,8 +174,9 @@ docker run -d \
 carstereo-player
 
 # Robust IP detection for laptops
-IP_ADDR=$(python3 -c "import socket; s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s.connect(('8.8.8.8', 80)); print(s.getsockname()[0]); s.close()" 2>/dev/null || echo "localhost")
+IP_ADDR=\$(python3 -c "import socket; s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s.connect(('8.8.8.8', 80)); print(s.getsockname()[0]); s.close()" 2>/dev/null || echo "localhost")
 
 echo "========================================="
-echo "Deployed at http://${IP_ADDR}:${PORT_ARG}"
+echo "Deployed at http://\${IP_ADDR}:\${PORT_ARG}"
+echo "Current View: Cosmic Edition (index2.html)"
 echo "========================================="
