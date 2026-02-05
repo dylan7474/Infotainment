@@ -84,6 +84,20 @@
                     <div class="text-[10px] font-bold tracking-widest text-emerald-500 uppercase" id="mode-indicator">Connected</div>
                 </div>
                 <h2 class="time-display time-display-glow text-3xl sm:text-5xl font-bold mb-2 truncate" id="display-title">00:00 / Sleep Off</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-1 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200/70">
+                    <div class="flex flex-wrap gap-2">
+                        <span class="opacity-60">Track</span>
+                        <span class="truncate" id="meta-track">No selection</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="opacity-60">Author</span>
+                        <span class="truncate" id="meta-author">--</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="opacity-60">Notes</span>
+                        <span class="truncate" id="meta-notes">Waiting</span>
+                    </div>
+                </div>
             </div>
             
             <div class="w-full">
@@ -168,6 +182,9 @@
     const defaultSleepStatus = 'Sleep Off';
     let sleepStatusText = defaultSleepStatus;
     const timeDisplay = document.getElementById('display-title');
+    const metaTrack = document.getElementById('meta-track');
+    const metaAuthor = document.getElementById('meta-author');
+    const metaNotes = document.getElementById('meta-notes');
     const noiseToggleBtn = document.getElementById('noise-toggle');
     const noiseTypeBtn = document.getElementById('noise-type-toggle');
     const noiseBalanceControls = Array.from(document.querySelectorAll('.noise-balance'));
@@ -195,6 +212,34 @@
         if (!timeDisplay) return;
         const timeText = currentTimeText ?? formatTime(audio.currentTime);
         timeDisplay.textContent = `${timeText} / ${sleepStatusText}`;
+    }
+
+    function updateStreamMetadata({ track, author, notes }) {
+        if (metaTrack) metaTrack.textContent = track || 'No selection';
+        if (metaAuthor) metaAuthor.textContent = author || '--';
+        if (metaNotes) metaNotes.textContent = notes || 'Waiting';
+    }
+
+    function applySourceMetadata(source) {
+        if (!source) {
+            updateStreamMetadata({ track: 'No selection', author: '--', notes: 'Waiting' });
+            return;
+        }
+        if (source.type === 'book') {
+            updateStreamMetadata({
+                track: source.data?.name || 'Untitled Track',
+                author: source.data?.bookName || 'Unknown Author',
+                notes: 'Audiobook',
+            });
+            return;
+        }
+        if (source.type === 'radio') {
+            updateStreamMetadata({
+                track: source.data?.name || 'Live Stream',
+                author: 'Live Radio',
+                notes: 'Streaming',
+            });
+        }
     }
 
     function loadCachedLibrary() {
@@ -411,6 +456,7 @@
         pendingResumeTime = state.playbackPositions[trackKey] || 0;
         audio.src = track.url;
         audio.play(); toggleView('player');
+        applySourceMetadata(state.currentSource);
         updateActivePresetButtons();
     }
 
@@ -424,6 +470,7 @@
         state.currentSource = { type: 'radio', data: station };
         audio.src = station.url;
         audio.play(); toggleView('player');
+        applySourceMetadata(state.currentSource);
         updateActivePresetButtons();
     }
 
@@ -675,6 +722,7 @@
         updateNoiseBalanceReadout();
         updateNoiseGain();
         updateNoiseUI();
+        applySourceMetadata(state.currentSource);
     }
     init();
 </script>
