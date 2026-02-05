@@ -168,7 +168,9 @@
 <script>
     const BOOKMARKS_ENDPOINT = './api/bookmarks';
     const LIBRARY_CACHE_KEY = 'carstereo.libraryCache.v1';
-    const USER_ID = new URLSearchParams(window.location.search).get('user') || 'default_stereo';
+    const urlParams = new URLSearchParams(window.location.search);
+    const USER_ID = urlParams.get('user') || 'default_stereo';
+    const DEBUG_STREAM = urlParams.get('debug') === '1';
     let state = { presets: {}, radioStations: [], books: {}, currentSource: null, playbackPositions: {}, longPressTimer: null, isHolding: false, isManagerMode: false };
     let pendingResumeTime = 0;
     let isDragging = false;
@@ -217,10 +219,21 @@
         timeDisplay.textContent = `${timeText} / ${sleepStatusText}`;
     }
 
+    function logStreamDebug(message, payload = null) {
+        if (!DEBUG_STREAM) return;
+        const timestamp = new Date().toISOString();
+        if (payload) {
+            console.info(`[StreamDebug ${timestamp}] ${message}`, payload);
+        } else {
+            console.info(`[StreamDebug ${timestamp}] ${message}`);
+        }
+    }
+
     function updateStreamMetadata({ track, author, notes }) {
         if (metaTrack) metaTrack.textContent = track || 'No selection';
         if (metaAuthor) metaAuthor.textContent = author || '--';
         if (metaNotes) metaNotes.textContent = notes || 'Waiting';
+        logStreamDebug('UI metadata updated', { track, author, notes });
     }
 
     function normalizeStationIdentity(station) {
@@ -284,13 +297,19 @@
         for (const endpoint of plan.endpoints) {
             try {
                 radioMetadataAbortController = new AbortController();
+                logStreamDebug('Fetching radio metadata', { endpoint });
                 const res = await fetch(endpoint, { signal: radioMetadataAbortController.signal });
-                if (!res.ok) continue;
+                if (!res.ok) {
+                    logStreamDebug('Radio metadata response not ok', { endpoint, status: res.status });
+                    continue;
+                }
                 const payload = await res.json();
                 const parsed = plan.parser(payload);
+                logStreamDebug('Parsed radio metadata', { endpoint, parsed, payload });
                 if (parsed?.track || parsed?.author) return parsed;
             } catch (error) {
                 if (error?.name === 'AbortError') return null;
+                logStreamDebug('Radio metadata fetch error', { endpoint, error: error?.message || error });
             }
         }
         return null;
@@ -313,6 +332,7 @@
         if (!plan) return;
         const updateFromPlan = async () => {
             const metadata = await fetchRadioMetadata(plan);
+            logStreamDebug('Radio metadata polling tick', { station, metadata });
             if (!metadata || state.currentSource?.data?.url !== station.url) return;
             station.metadata = { track: metadata.track, artist: metadata.author };
             updateStreamMetadata({
@@ -358,27 +378,33 @@
                     || stream?.song?.artist
                     || stream?.metadata?.artist;
                 if (track || author) {
-                    return {
+                    const metadata = {
                         track: track || fallback.track,
                         author: author || fallback.author,
                         notes: stream?.name || stream?.format || fallback.notes,
                     };
+                    logStreamDebug('Radio metadata resolved from streams', { station, stream, metadata });
+                    return metadata;
                 }
             }
         }
         for (const candidate of candidates) {
             if (candidate.track || candidate.author) {
-                return {
+                const metadata = {
                     track: candidate.track || fallback.track,
                     author: candidate.author || fallback.author,
                     notes: fallback.notes,
                 };
+                logStreamDebug('Radio metadata resolved from candidates', { station, candidate, metadata });
+                return metadata;
             }
         }
+        logStreamDebug('Radio metadata fallback used', { station, fallback });
         return fallback;
     }
 
     function applySourceMetadata(source) {
+        logStreamDebug('Applying source metadata', source);
         if (!source) {
             updateStreamMetadata({ track: 'No selection', author: '--', notes: 'Waiting' });
             return;
@@ -392,7 +418,8 @@
             return;
         }
         if (source.type === 'radio') {
-            updateStreamMetadata(getRadioMetadata(source.data));
+            const metadata = getRadioMetadata(source.data);
+            updateStreamMetadata(metadata);
         }
     }
 
@@ -623,6 +650,7 @@
         }
         pendingResumeTime = 0;
         state.currentSource = { type: 'radio', data: station };
+        logStreamDebug('Radio playback started', { station });
         audio.src = station.url;
         audio.play(); toggleView('player');
         applySourceMetadata(state.currentSource);
@@ -831,6 +859,7 @@
     async function init() {
         const data = await sync('GET');
         if (data) { Object.assign(state, data); }
+        logStreamDebug('Initial state loaded', state);
         const cachedLibrary = loadCachedLibrary();
         let libraryFetched = false;
         try {
