@@ -220,6 +220,59 @@
         if (metaNotes) metaNotes.textContent = notes || 'Waiting';
     }
 
+    function getRadioMetadata(station) {
+        const fallback = {
+            track: station?.name || 'Live Stream',
+            author: 'Live Radio',
+            notes: 'Streaming',
+        };
+        const candidates = [
+            { track: station?.track, author: station?.artist },
+            { track: station?.title, author: station?.author },
+            { track: station?.nowPlaying?.track, author: station?.nowPlaying?.artist },
+            { track: station?.nowPlaying?.title, author: station?.nowPlaying?.artist },
+            { track: station?.nowPlaying?.song, author: station?.nowPlaying?.artist },
+            { track: station?.metadata?.track, author: station?.metadata?.artist },
+            { track: station?.metadata?.title, author: station?.metadata?.artist },
+        ];
+        if (Array.isArray(station?.streams)) {
+            for (const stream of station.streams) {
+                const track = stream?.track
+                    || stream?.title
+                    || stream?.nowPlaying?.track
+                    || stream?.nowPlaying?.title
+                    || stream?.now_playing?.track
+                    || stream?.now_playing?.title
+                    || stream?.song?.title
+                    || stream?.song?.track
+                    || stream?.metadata?.track
+                    || stream?.metadata?.title;
+                const author = stream?.artist
+                    || stream?.nowPlaying?.artist
+                    || stream?.now_playing?.artist
+                    || stream?.song?.artist
+                    || stream?.metadata?.artist;
+                if (track || author) {
+                    return {
+                        track: track || fallback.track,
+                        author: author || fallback.author,
+                        notes: stream?.name || stream?.format || fallback.notes,
+                    };
+                }
+            }
+        }
+        for (const candidate of candidates) {
+            if (candidate.track || candidate.author) {
+                return {
+                    track: candidate.track || fallback.track,
+                    author: candidate.author || fallback.author,
+                    notes: fallback.notes,
+                };
+            }
+        }
+        return fallback;
+    }
+
     function applySourceMetadata(source) {
         if (!source) {
             updateStreamMetadata({ track: 'No selection', author: '--', notes: 'Waiting' });
@@ -234,11 +287,7 @@
             return;
         }
         if (source.type === 'radio') {
-            updateStreamMetadata({
-                track: source.data?.name || 'Live Stream',
-                author: 'Live Radio',
-                notes: 'Streaming',
-            });
+            updateStreamMetadata(getRadioMetadata(source.data));
         }
     }
 
