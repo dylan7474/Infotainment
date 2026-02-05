@@ -243,27 +243,39 @@
         };
     }
 
+    function buildCorsSafeEndpoints(endpoints) {
+        const proxyPrefix = 'https://api.allorigins.win/raw?url=';
+        const expanded = [];
+        endpoints.forEach((endpoint) => {
+            if (!endpoint) return;
+            expanded.push(endpoint);
+            const proxied = `${proxyPrefix}${encodeURIComponent(endpoint)}`;
+            if (proxied !== endpoint) expanded.push(proxied);
+        });
+        return expanded;
+    }
+
     function getRadioMetadataPlan(station) {
         const identity = normalizeStationIdentity(station);
         if (identity.name.includes('radio paradise') || identity.url.includes('radioparadise')) {
             const channel = identity.name.includes('rock') || identity.url.includes('rock') ? 'rock' : 'main';
             const channelIndex = channel === 'rock' ? 1 : 0;
             return {
-                endpoints: [
+                endpoints: buildCorsSafeEndpoints([
                     `https://www.radioparadise.com/api/nowplaying?channel=${channel}`,
                     `https://api.radioparadise.com/api/nowplaying?channel=${channel}`,
                     `https://api.radioparadise.com/api/nowplaying?chan=${channelIndex}`,
-                ],
+                ]),
                 notes: channel === 'rock' ? 'Radio Paradise Rock Mix' : 'Radio Paradise Main Mix',
                 parser: extractRadioParadiseMetadata,
             };
         }
         if (identity.name.includes('bbc radio 4') || identity.url.includes('bbc_radio_four') || identity.url.includes('radio4')) {
             return {
-                endpoints: [
+                endpoints: buildCorsSafeEndpoints([
                     'https://rms.api.bbc.co.uk/v2/services/bbc_radio_four/segments/latest?offset=0&limit=1',
                     'https://rms.api.bbc.co.uk/v2/services/bbc_radio_four/segments?on_air=true',
-                ],
+                ]),
                 notes: 'BBC Radio 4',
                 parser: extractBbcRadio4Metadata,
             };
