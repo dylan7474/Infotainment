@@ -185,6 +185,9 @@
     const metaTrack = document.getElementById('meta-track');
     const metaAuthor = document.getElementById('meta-author');
     const metaNotes = document.getElementById('meta-notes');
+    const RADIO_METADATA_POLL_MS = 15000;
+    let radioMetadataIntervalId = null;
+    let radioMetadataAbortController = null;
     const noiseToggleBtn = document.getElementById('noise-toggle');
     const noiseTypeBtn = document.getElementById('noise-type-toggle');
     const noiseBalanceControls = Array.from(document.querySelectorAll('.noise-balance'));
@@ -218,6 +221,108 @@
         if (metaTrack) metaTrack.textContent = track || 'No selection';
         if (metaAuthor) metaAuthor.textContent = author || '--';
         if (metaNotes) metaNotes.textContent = notes || 'Waiting';
+    }
+
+    function normalizeStationIdentity(station) {
+        return {
+            name: (station?.name || '').toLowerCase(),
+            url: (station?.url || '').toLowerCase(),
+        };
+    }
+
+    function getRadioMetadataPlan(station) {
+        const identity = normalizeStationIdentity(station);
+        if (identity.name.includes('radio paradise') || identity.url.includes('radioparadise')) {
+            const channel = identity.name.includes('rock') || identity.url.includes('rock') ? 'rock' : 'main';
+            const channelIndex = channel === 'rock' ? 1 : 0;
+            return {
+                endpoints: [
+                    `https://www.radioparadise.com/api/nowplaying?channel=${channel}`,
+                    `https://api.radioparadise.com/api/nowplaying?channel=${channel}`,
+                    `https://api.radioparadise.com/api/nowplaying?chan=${channelIndex}`,
+                ],
+                notes: channel === 'rock' ? 'Radio Paradise Rock Mix' : 'Radio Paradise Main Mix',
+                parser: extractRadioParadiseMetadata,
+            };
+        }
+        if (identity.name.includes('bbc radio 4') || identity.url.includes('bbc_radio_four') || identity.url.includes('radio4')) {
+            return {
+                endpoints: [
+                    'https://rms.api.bbc.co.uk/v2/services/bbc_radio_four/segments/latest?offset=0&limit=1',
+                    'https://rms.api.bbc.co.uk/v2/services/bbc_radio_four/segments?on_air=true',
+                ],
+                notes: 'BBC Radio 4',
+                parser: extractBbcRadio4Metadata,
+            };
+        }
+        return null;
+    }
+
+    function extractRadioParadiseMetadata(payload) {
+        const song = payload?.song || payload?.nowPlaying || payload?.data || payload;
+        const track = song?.title || song?.track || song?.song;
+        const author = song?.artist || song?.performer;
+        if (!track && !author) return null;
+        return { track, author };
+    }
+
+    function extractBbcRadio4Metadata(payload) {
+        const segment = payload?.segment
+            || payload?.data?.segment
+            || payload?.segments?.[0]
+            || payload?.data?.segments?.[0]
+            || payload?.data?.on_air?.[0];
+        if (!segment) return null;
+        const titles = segment?.titles || segment?.title;
+        const track = titles?.primary || titles?.secondary || segment?.title || segment?.display_title;
+        const author = segment?.artists?.[0]?.name || segment?.talent?.[0]?.name || segment?.presenter?.name;
+        if (!track && !author) return null;
+        return { track, author };
+    }
+
+    async function fetchRadioMetadata(plan) {
+        for (const endpoint of plan.endpoints) {
+            try {
+                radioMetadataAbortController = new AbortController();
+                const res = await fetch(endpoint, { signal: radioMetadataAbortController.signal });
+                if (!res.ok) continue;
+                const payload = await res.json();
+                const parsed = plan.parser(payload);
+                if (parsed?.track || parsed?.author) return parsed;
+            } catch (error) {
+                if (error?.name === 'AbortError') return null;
+            }
+        }
+        return null;
+    }
+
+    function stopRadioMetadataPolling() {
+        if (radioMetadataIntervalId) {
+            clearInterval(radioMetadataIntervalId);
+            radioMetadataIntervalId = null;
+        }
+        if (radioMetadataAbortController) {
+            radioMetadataAbortController.abort();
+            radioMetadataAbortController = null;
+        }
+    }
+
+    function startRadioMetadataPolling(station) {
+        stopRadioMetadataPolling();
+        const plan = getRadioMetadataPlan(station);
+        if (!plan) return;
+        const updateFromPlan = async () => {
+            const metadata = await fetchRadioMetadata(plan);
+            if (!metadata || state.currentSource?.data?.url !== station.url) return;
+            station.metadata = { track: metadata.track, artist: metadata.author };
+            updateStreamMetadata({
+                track: metadata.track || station.name,
+                author: metadata.author || 'Live Radio',
+                notes: plan.notes,
+            });
+        };
+        updateFromPlan();
+        radioMetadataIntervalId = setInterval(updateFromPlan, RADIO_METADATA_POLL_MS);
     }
 
     function getRadioMetadata(station) {
@@ -500,6 +605,7 @@
             toggleView('player');
             return;
         }
+        stopRadioMetadataPolling();
         state.currentSource = { type: 'book', data: { bookName, trackIdx, url: track.url, name: track.name } };
         const trackKey = `server:${track.url}`;
         pendingResumeTime = state.playbackPositions[trackKey] || 0;
@@ -520,6 +626,7 @@
         audio.src = station.url;
         audio.play(); toggleView('player');
         applySourceMetadata(state.currentSource);
+        startRadioMetadataPolling(station);
         updateActivePresetButtons();
     }
 
@@ -772,6 +879,9 @@
         updateNoiseGain();
         updateNoiseUI();
         applySourceMetadata(state.currentSource);
+        if (state.currentSource?.type === 'radio') {
+            startRadioMetadataPolling(state.currentSource.data);
+        }
     }
     init();
 </script>
