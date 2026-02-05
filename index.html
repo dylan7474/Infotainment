@@ -244,13 +244,20 @@
     }
 
     function buildCorsSafeEndpoints(endpoints) {
-        const proxyPrefix = 'https://api.allorigins.win/raw?url=';
+        const proxies = [
+            (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+            (url) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+            (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+            (url) => `https://r.jina.ai/http://${url.replace(/^https?:\/\//, '')}`,
+        ];
         const expanded = [];
         endpoints.forEach((endpoint) => {
             if (!endpoint) return;
             expanded.push(endpoint);
-            const proxied = `${proxyPrefix}${encodeURIComponent(endpoint)}`;
-            if (proxied !== endpoint) expanded.push(proxied);
+            proxies.forEach((proxy) => {
+                const proxied = proxy(endpoint);
+                if (proxied && proxied !== endpoint) expanded.push(proxied);
+            });
         });
         return expanded;
     }
@@ -305,6 +312,25 @@
         return { track, author };
     }
 
+    function parseJsonPayload(text) {
+        if (!text) return null;
+        try {
+            return JSON.parse(text);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    async function readMetadataPayload(response) {
+        const text = await response.text();
+        const direct = parseJsonPayload(text);
+        if (direct?.contents && typeof direct.contents === 'string') {
+            const nested = parseJsonPayload(direct.contents);
+            return nested || direct;
+        }
+        return direct;
+    }
+
     async function fetchRadioMetadata(plan) {
         for (const endpoint of plan.endpoints) {
             try {
@@ -315,7 +341,11 @@
                     logStreamDebug('Radio metadata response not ok', { endpoint, status: res.status });
                     continue;
                 }
-                const payload = await res.json();
+                const payload = await readMetadataPayload(res);
+                if (!payload) {
+                    logStreamDebug('Radio metadata payload parse failed', { endpoint });
+                    continue;
+                }
                 const parsed = plan.parser(payload);
                 logStreamDebug('Parsed radio metadata', { endpoint, parsed, payload });
                 if (parsed?.track || parsed?.author) return parsed;
